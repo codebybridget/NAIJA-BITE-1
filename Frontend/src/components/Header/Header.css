@@ -20,11 +20,11 @@
 
 .header-contents h2{
     font-weight: 500px;
-    color: tomato;
+    color: white;
     font-size: max(4.5vw,22px);
 }
 .header-contents p{
-    color: tomato;
+    color: white;
     font-size: 2vw;
 }
 .header-contents button{
