@@ -1,0 +1,127 @@
+/* MyOrders.css - Refined & Responsive */
+
+.myOrders {
+  margin: 50px;
+  font-family: Arial, sans-serif;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.myOrders h2 {
+  font-size: 28px;
+  margin-bottom: 25px;
+  color: #333;
+  text-align: center;
+}
+
+/* Orders container */
+.myOrders .container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* Individual order card */
+.my-orders-order {
+  display: grid;
+  grid-template-columns: 60px 3fr 1.5fr 1.5fr 1fr;
+  align-items: start;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid #ff6347; /* Tomato */
+  border-radius: 12px;
+  background-color: #fff4f4;
+  color: #454545;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.my-orders-order:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Parcel icon */
+.my-orders-order img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+/* Order details */
+.my-orders-order div p {
+  margin: 5px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.my-orders-order p span {
+  color: #ff6347;
+}
+
+.my-orders-order p b {
+  font-weight: 500;
+  color: #454545;
+}
+
+/* Items list styling */
+.my-orders-order p.items span {
+  display: inline-block;
+  margin-right: 8px;
+  margin-bottom: 5px;
+  background: #ffe1e1;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+/* Track order button */
+.my-orders-order button {
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  background-color: #ffcccc;
+  cursor: pointer;
+  color: #454545;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.my-orders-order button:hover {
+  background-color: #ff9999;
+}
+
+/* Responsive for tablets and mobile */
+@media (max-width: 900px) {
+  .my-orders-order {
+    grid-template-columns: 1fr;
+    row-gap: 15px;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .my-orders-order button {
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .my-orders-order img {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 500px) {
+  .myOrders {
+    margin: 20px;
+  }
+
+  .myOrders h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .my-orders-order {
+    padding: 15px;
+    gap: 15px;
+  }
+}

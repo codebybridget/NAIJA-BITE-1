@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Outfit', sans-serif;
+}
+
+body{
+  min-height: 100vh; /* fixed from 100vw */
+  background-color: #fcfcfc;
+}
+
+a{
+  text-decoration: none;
+  color: inherit;
+}
+
+hr{
+  border: none;
+  height: 1px;
+  background-color: #a9a9a9;
+}
+
+.app-content{
+  display: flex;
+}
+
+.flex-col{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Removed invalid :current selector */
+
+/* Added Safari prefix for user-select */
+.remove-btn {
+  -webkit-user-select: none; /* Safari 3+ */
+  user-select: none;
+}
+
+/* Example of improved keyframe without visibility animation */
+@keyframes Toastify__slideInRight {
+  0% {
+    transform: translate3d(110%,0,0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(0,0,0);
+    opacity: 1;
+  }
+}

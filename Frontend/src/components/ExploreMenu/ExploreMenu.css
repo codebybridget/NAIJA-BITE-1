@@ -1,0 +1,89 @@
+.explore-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.explore-menu h1 {
+  color: #262626;
+  font-weight: 500;
+}
+
+.explore-menu-text {
+  max-width: 60%;
+  color: #808080;
+}
+
+.explore-menu-list {
+  display: flex;
+  gap: 30px;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.explore-menu-list::-webkit-scrollbar {
+  display: none;
+}
+
+.explore-menu-list-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.explore-menu-list-item img {
+  width: 7.5vw;
+  min-width: 80px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.explore-menu-list-item:hover img {
+  border-color: tomato;
+  transform: scale(1.1);
+}
+
+.explore-menu-list-item p {
+  margin-top: 10px;
+  color: #747474;
+  font-size: max(1.4vw,16px);
+}
+
+/* Active category highlight */
+.explore-menu-list-item.active img {
+  border: 4px solid tomato;
+  padding: 2px;
+}
+
+/* Red dot on hover */
+.hover-dot {
+  position: absolute;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  background: tomato;
+  border-radius: 50%;
+  display: none;
+}
+
+.explore-menu-list-item:hover .hover-dot {
+  display: block;
+}
+
+hr {
+  margin: 10px 0px;
+  height: 2px;
+  background-color: #e2e2e2;
+  border: none;
+}
+
+/* Responsive */
+@media (max-width: 1050px) {
+  .explore-menu-text { max-width: 100%; font-size: 14px; }
+  .explore-menu-list { gap: 20px; }
+}
