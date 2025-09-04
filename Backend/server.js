@@ -3,8 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-import http from "http";          // ✅ add
-import { Server } from "socket.io"; // ✅ add
+import http from "http";          
+import { Server } from "socket.io";
 
 import { connectDB } from "./config/db.js";
 import foodRouter from "./routes/foodRouter.js";
@@ -16,7 +16,7 @@ import upload from "./middleware/uploadMiddleware.js";
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app); // ✅ wrap Express with HTTP server
+const PORT = process.env.PORT || 5000;
 
 // Ensure uploads folder exists
 const uploadsPath = path.join(process.cwd(), "uploads");
@@ -55,6 +55,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message });
 });
 
+// ✅ Create HTTP server
+const server = http.createServer(app);
+
 // ✅ Setup Socket.IO
 const io = new Server(server, {
   cors: {
@@ -75,7 +78,7 @@ io.on("connection", (socket) => {
 // ✅ export io so controllers can use it
 export { io };
 
-const PORT = process.env.PORT || 5000;
+// ✅ Start server
 server.listen(PORT, () =>
   console.log(`🚀 Server running on http://localhost:${PORT}`)
 );
