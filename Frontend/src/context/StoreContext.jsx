@@ -10,7 +10,7 @@ const StoreContextProvider = ({ children, setShowLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const url = "http://localhost:5000";
+  const url = "https://naija-bite-1-backend.onrender.com";
 
   const formatNaira = (amount) => `₦${amount.toLocaleString()}`;
   const normalizeCart = (data) => (data ? data : {});
