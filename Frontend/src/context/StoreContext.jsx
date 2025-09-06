@@ -10,7 +10,12 @@ const StoreContextProvider = ({ children, setShowLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+<<<<<<< HEAD
   const url = "https://naija-bite-1backend.onrender.com";
+=======
+  // ✅ Use VITE_API_URL from .env
+  const url = import.meta.env.VITE_API_URL;
+>>>>>>> b8d5609 (Update StoreContext, FoodItem, and env configuration)
 
   const formatNaira = (amount) => `₦${amount.toLocaleString()}`;
   const normalizeCart = (data) => (data ? data : {});
@@ -21,21 +26,19 @@ const StoreContextProvider = ({ children, setShowLogin }) => {
     if (setShowLogin) setShowLogin(true);
   };
 
-  // ✅ Create axios instance
+  // ✅ Axios instance
   const axiosInstance = axios.create({
     baseURL: url,
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
   });
 
-  // ✅ Interceptor to attach token
   axiosInstance.interceptors.request.use((config) => {
     const authToken = token || localStorage.getItem("token");
     if (authToken) config.headers.Authorization = `Bearer ${authToken}`;
     return config;
   });
 
-  // ✅ Interceptor for 401
   axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -44,7 +47,7 @@ const StoreContextProvider = ({ children, setShowLogin }) => {
     }
   );
 
-  // ✅ Fetch food list using axiosInstance
+  // ✅ Fetch food list
   const fetchFoodList = async () => {
     setLoading(true);
     setError(null);
@@ -130,7 +133,7 @@ const StoreContextProvider = ({ children, setShowLogin }) => {
         setToken,
         loading,
         error,
-        axiosInstance, // ✅ expose to children
+        axiosInstance,
       }}
     >
       {children}
