@@ -10,12 +10,7 @@ const StoreContextProvider = ({ children, setShowLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-<<<<<<< HEAD
-  const url = "https://naija-bite-1backend.onrender.com";
-=======
-  // ✅ Use VITE_API_URL from .env
   const url = import.meta.env.VITE_API_URL;
->>>>>>> b8d5609 (Update StoreContext, FoodItem, and env configuration)
 
   const formatNaira = (amount) => `₦${amount.toLocaleString()}`;
   const normalizeCart = (data) => (data ? data : {});
