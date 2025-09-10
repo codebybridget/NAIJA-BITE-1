@@ -9,6 +9,10 @@ dotenv.config();
 
 const router = express.Router();
 
+// Ensure uploads folder exists
+const uploadsPath = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath);
+
 // Get backend URL from env
 const backendURL = process.env.BACKEND_URL || 'http://localhost:5000';
 
@@ -17,13 +21,19 @@ router.post('/add', upload.single('image'), async (req, res) => {
   try {
     const { name, description, price, category } = req.body;
 
-    if (!name || !description || !price || !category)
+    if (!name || !description || !price || !category) {
       return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
 
-    if (!req.file)
+    if (isNaN(Number(price))) {
+      return res.status(400).json({ success: false, message: 'Price must be a valid number' });
+    }
+
+    if (!req.file) {
       return res.status(400).json({ success: false, message: 'Image is required' });
+    }
 
-    // Use full URL for frontend display
+    // Use full URL for image
     const imagePath = `${backendURL}/uploads/${req.file.filename}`;
 
     const food = new Food({
@@ -62,7 +72,7 @@ router.post('/remove', async (req, res) => {
     const food = await Food.findById(id);
     if (!food) return res.status(404).json({ success: false, message: 'Food not found' });
 
-    // Delete image file from server
+    // Remove image file
     const filePath = path.join(process.cwd(), 'uploads', path.basename(food.image));
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
