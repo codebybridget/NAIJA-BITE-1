@@ -8,21 +8,26 @@ import { io } from 'socket.io-client';
 const Orders = ({ url }) => {
   const [orders, setOrders] = useState([]);
 
-  // ✅ Connect to socket
+  // ✅ Connect to WebSocket
   useEffect(() => {
     if (!url) return;
 
+    // Ensure HTTPS/WSS connection for live deployment
     const socket = io(url, {
-      transports: ["websocket"], // ensure reliable connection
-      withCredentials: true,
+      transports: ['websocket'],
+      secure: true,
+      reconnection: true,
     });
 
-    socket.on("connect", () =>
-      console.log("⚡ Connected to socket:", socket.id)
+    socket.on('connect', () =>
+      console.log('⚡ Connected to socket:', socket.id)
     );
 
-    // Listen for refresh event from backend
-    socket.on("refreshOrders", () => {
+    socket.on('connect_error', (err) =>
+      console.error('⚡ Socket connection error:', err.message)
+    );
+
+    socket.on('refreshOrders', () => {
       fetchAllOrders();
     });
 
@@ -49,7 +54,6 @@ const Orders = ({ url }) => {
   // ✅ Handle status change
   const statusHandler = async (e, orderId) => {
     const newStatus = e.target.value;
-
     try {
       const response = await axios.post(`${url}/api/orders/status`, {
         orderId,
@@ -60,8 +64,8 @@ const Orders = ({ url }) => {
         toast.success('Order status updated successfully');
 
         // Optimistic UI update
-        setOrders(prevOrders =>
-          prevOrders.map(order =>
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
             order._id === orderId ? { ...order, status: newStatus } : order
           )
         );
@@ -74,7 +78,7 @@ const Orders = ({ url }) => {
     }
   };
 
-  // ✅ Initial fetch on mount
+  // ✅ Initial fetch
   useEffect(() => {
     fetchAllOrders();
   }, []);
@@ -86,10 +90,9 @@ const Orders = ({ url }) => {
         {orders.length === 0 ? (
           <p>No orders found.</p>
         ) : (
-          orders.map(order => (
+          orders.map((order) => (
             <div key={order._id} className="order-items">
               <img src={assets.parcel_icon} alt="Parcel Icon" />
-
               <p className="order-item-food">
                 {order.items.map((item, idx) => (
                   <span key={idx}>
@@ -117,7 +120,7 @@ const Orders = ({ url }) => {
               <p>₦{order.amount}</p>
 
               <select
-                onChange={e => statusHandler(e, order._id)}
+                onChange={(e) => statusHandler(e, order._id)}
                 value={order.status}
               >
                 <option value="Food processing">Food processing</option>
