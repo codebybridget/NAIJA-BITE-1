@@ -44,13 +44,14 @@ const placeOrder = async (req, res) => {
       quantity: 1,
     });
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items,
-      mode: "payment",
-      success_url: `https://naija-bite-1frontend-a5mq.onrender.com/verify?success=true&orderId=${newOrder._id}`,
-      cancel_url: `https://naija-bite-1frontend-a5mq.onrender.com/verify?success=false&orderId=${newOrder._id}`,
-    });
+   const session = await stripe.checkout.sessions.create({
+  payment_method_types: ["card"],
+  line_items,
+  mode: "payment",
+  success_url: `${process.env.FRONTEND_URL}/verify?success=true&orderId=${newOrder._id}`,
+  cancel_url: `${process.env.FRONTEND_URL}/verify?success=false&orderId=${newOrder._id}`,
+});
+
 
     res.json({ success: true, session_url: session.url, orderId: newOrder._id });
   } catch (error) {
