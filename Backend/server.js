@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-import http from "http";          
+import http from "http";
 import { Server } from "socket.io";
 
 import { connectDB } from "./config/db.js";
@@ -18,13 +18,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Ensure uploads folder exists
+// ------------------ Ensure uploads folder ------------------
 const uploadsPath = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath);
 
-// Connect to database
+// ------------------ Connect to MongoDB ------------------
 connectDB();
 
+// ------------------ CORS Setup ------------------
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -34,8 +35,10 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || (origin && origin.endsWith(".onrender.com"))) {
+    // Allow exact origins or any Render subdomain
+    if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
       return callback(null, true);
     }
     return callback(new Error("Not allowed by CORS: " + origin));
@@ -45,33 +48,38 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-// Handle preflight requests
+// Handle preflight requests globally
 app.options("*", cors());
 
+// ------------------ Middleware ------------------
 app.use(express.json());
 app.use("/uploads", express.static(uploadsPath));
 
+// ------------------ Routes ------------------
 app.use("/api/food", foodRouter);
 app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
 
+// Test upload route
 app.post("/test-upload", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
   res.json({ filename: req.file.filename, path: `/uploads/${req.file.filename}` });
 });
 
+// ------------------ Global Error Handler ------------------
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err.message);
   res.status(500).json({ message: err.message });
 });
 
+// ------------------ HTTP Server & Socket.IO ------------------
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || (origin && origin.endsWith(".onrender.com"))) {
+      if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
         return callback(null, true);
       }
       return callback(new Error("Not allowed by Socket.IO CORS: " + origin));
@@ -86,6 +94,8 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => console.log("❌ Client disconnected:", socket.id));
 });
 
+// Export io for controllers
 export { io };
 
+// ------------------ Start Server ------------------
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
