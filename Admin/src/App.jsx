@@ -9,7 +9,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
-  const url = 'http://localhost:5000';
+  // ✅ Use your Render backend URL instead of localhost
+  const url = 'https://naija-bite-1backend.onrender.com'; 
 
   return (
     <div>
