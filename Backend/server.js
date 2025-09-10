@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 5000;
 const uploadsPath = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath);
 
-// Connect to database
+// Connect to MongoDB
 connectDB();
 
 // Allowed origins
@@ -34,25 +34,27 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ];
 
-// CORS
+// CORS middleware
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS: " + origin));
-      }
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow non-browser requests
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error("Not allowed by CORS: " + origin));
     },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
+// Handle OPTIONS preflight globally
+app.options("*", cors());
+
 // Body parser
 app.use(express.json());
 
-// ✅ Serve uploads folder globally
+// Serve uploaded images
 app.use("/uploads", express.static(uploadsPath));
 
 // API routes
@@ -61,10 +63,9 @@ app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
 
-// Test upload
+// Test file upload endpoint
 app.post("/test-upload", upload.single("image"), (req, res) => {
-  if (!req.file)
-    return res.status(400).json({ message: "No file uploaded" });
+  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
   res.json({ filename: req.file.filename, path: `/uploads/${req.file.filename}` });
 });
 
@@ -74,18 +75,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message });
 });
 
-// HTTP server & Socket.IO
+// HTTP server + Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by Socket.IO CORS: " + origin));
-      }
-    },
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -100,6 +94,4 @@ io.on("connection", (socket) => {
 export { io };
 
 // Start server
-server.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
-);
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
