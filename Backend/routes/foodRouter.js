@@ -1,4 +1,3 @@
-// backend/routes/foodRouter.js
 import express from 'express';
 import Food from '../models/Food.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -10,16 +9,6 @@ dotenv.config();
 
 const router = express.Router();
 
-// Ensure uploads folder exists
-const uploadsPath = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsPath)) {
-  fs.mkdirSync(uploadsPath);
-  console.log('📁 Created uploads folder');
-}
-
-// Serve uploaded images
-router.use('/uploads', express.static(uploadsPath));
-
 // Get backend URL from env
 const backendURL = process.env.BACKEND_URL || 'http://localhost:5000';
 
@@ -28,19 +17,13 @@ router.post('/add', upload.single('image'), async (req, res) => {
   try {
     const { name, description, price, category } = req.body;
 
-    if (!name || !description || !price || !category) {
+    if (!name || !description || !price || !category)
       return res.status(400).json({ success: false, message: 'All fields are required' });
-    }
 
-    if (isNaN(Number(price))) {
-      return res.status(400).json({ success: false, message: 'Price must be a valid number' });
-    }
-
-    if (!req.file) {
+    if (!req.file)
       return res.status(400).json({ success: false, message: 'Image is required' });
-    }
 
-    // Use full URL for the image
+    // Use full URL for frontend display
     const imagePath = `${backendURL}/uploads/${req.file.filename}`;
 
     const food = new Food({
@@ -52,7 +35,6 @@ router.post('/add', upload.single('image'), async (req, res) => {
     });
 
     await food.save();
-
     res.status(201).json({ success: true, message: 'Food added successfully', food });
   } catch (error) {
     console.error('🔥 Error adding food:', error);
@@ -80,14 +62,11 @@ router.post('/remove', async (req, res) => {
     const food = await Food.findById(id);
     if (!food) return res.status(404).json({ success: false, message: 'Food not found' });
 
-    // Remove image file
+    // Delete image file from server
     const filePath = path.join(process.cwd(), 'uploads', path.basename(food.image));
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
     await Food.findByIdAndDelete(id);
-
     res.json({ success: true, message: 'Food removed successfully' });
   } catch (error) {
     console.error('🔥 Error removing food:', error);
