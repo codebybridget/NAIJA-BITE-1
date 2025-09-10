@@ -25,18 +25,16 @@ if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath);
 // Connect to database
 connectDB();
 
-// Allowed origins
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   process.env.FRONTEND_URL,
   process.env.ADMIN_URL,
-];
+].filter(Boolean);
 
-// CORS middleware
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow non-browser requests
+    if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin) || (origin && origin.endsWith(".onrender.com"))) {
       return callback(null, true);
     }
@@ -50,31 +48,24 @@ app.use(cors({
 // Handle preflight requests
 app.options("*", cors());
 
-// Body parser
 app.use(express.json());
-
-// Serve uploads folder
 app.use("/uploads", express.static(uploadsPath));
 
-// API routes
 app.use("/api/food", foodRouter);
 app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
 
-// Test upload route
 app.post("/test-upload", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
   res.json({ filename: req.file.filename, path: `/uploads/${req.file.filename}` });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err.message);
   res.status(500).json({ message: err.message });
 });
 
-// HTTP server & Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -82,9 +73,8 @@ const io = new Server(server, {
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin) || (origin && origin.endsWith(".onrender.com"))) {
         return callback(null, true);
-      } else {
-        return callback(new Error("Not allowed by Socket.IO CORS: " + origin));
       }
+      return callback(new Error("Not allowed by Socket.IO CORS: " + origin));
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
@@ -96,8 +86,6 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => console.log("❌ Client disconnected:", socket.id));
 });
 
-// Export io for controllers
 export { io };
 
-// Start server
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
