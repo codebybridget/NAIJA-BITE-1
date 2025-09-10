@@ -1,17 +1,27 @@
+// backend/routes/foodRouter.js
 import express from 'express';
 import Food from '../models/Food.js';
 import upload from '../middleware/uploadMiddleware.js';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = express.Router();
 
 // Ensure uploads folder exists
 const uploadsPath = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath);
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath);
+  console.log('📁 Created uploads folder');
+}
 
-// Serve uploaded images (optional if server.js already does this)
-// router.use('/uploads', express.static(uploadsPath));
+// Serve uploaded images
+router.use('/uploads', express.static(uploadsPath));
+
+// Get backend URL from env
+const backendURL = process.env.BACKEND_URL || 'http://localhost:5000';
 
 // Add a new food item
 router.post('/add', upload.single('image'), async (req, res) => {
@@ -30,8 +40,8 @@ router.post('/add', upload.single('image'), async (req, res) => {
       return res.status(400).json({ success: false, message: 'Image is required' });
     }
 
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
-    const imagePath = `${backendUrl}/uploads/${req.file.filename}`;
+    // Use full URL for the image
+    const imagePath = `${backendURL}/uploads/${req.file.filename}`;
 
     const food = new Food({
       name,
@@ -71,9 +81,10 @@ router.post('/remove', async (req, res) => {
     if (!food) return res.status(404).json({ success: false, message: 'Food not found' });
 
     // Remove image file
-    const fileName = path.basename(food.image); // get filename from URL
-    const filePath = path.join(uploadsPath, fileName);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    const filePath = path.join(process.cwd(), 'uploads', path.basename(food.image));
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
 
     await Food.findByIdAndDelete(id);
 
