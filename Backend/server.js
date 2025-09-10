@@ -25,18 +25,20 @@ if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath);
 // Connect to database
 connectDB();
 
+// Allowed origins
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "https://naija-bite-1admin.onrender.com",
   "https://naija-bite-1frontend-a5mq.onrender.com",
-  process.env.FRONTEND_URL, // live frontend URL from .env
+  process.env.FRONTEND_URL,
 ];
 
+// CORS
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // allow non-browser requests
+      if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
         callback(null, true);
       } else {
@@ -47,8 +49,11 @@ app.use(
   })
 );
 
+// Body parser
 app.use(express.json());
-app.use("/uploads", express.static(uploadsPath)); // Serve uploaded files
+
+// ✅ Serve uploads folder globally
+app.use("/uploads", express.static(uploadsPath));
 
 // API routes
 app.use("/api/food", foodRouter);
@@ -56,7 +61,7 @@ app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
 
-// Test file upload
+// Test upload
 app.post("/test-upload", upload.single("image"), (req, res) => {
   if (!req.file)
     return res.status(400).json({ message: "No file uploaded" });
@@ -69,10 +74,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message });
 });
 
-// Create HTTP server
+// HTTP server & Socket.IO
 const server = http.createServer(app);
-
-// Socket.IO with flexible CORS
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
@@ -90,13 +93,10 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   console.log("⚡ Client connected:", socket.id);
-
-  socket.on("disconnect", () => {
-    console.log("❌ Client disconnected:", socket.id);
-  });
+  socket.on("disconnect", () => console.log("❌ Client disconnected:", socket.id));
 });
 
-// export io so controllers can use it
+// Export io for controllers
 export { io };
 
 // Start server
