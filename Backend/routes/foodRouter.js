@@ -1,4 +1,3 @@
-// backend/routes/food.js
 import express from 'express';
 import Food from '../models/Food.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -9,13 +8,10 @@ const router = express.Router();
 
 // Ensure uploads folder exists
 const uploadsPath = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsPath)) {
-  fs.mkdirSync(uploadsPath);
-  console.log('📁 Created uploads folder');
-}
+if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath);
 
-// Serve uploaded images
-router.use('/uploads', express.static(uploadsPath));
+// Serve uploaded images (optional if server.js already does this)
+// router.use('/uploads', express.static(uploadsPath));
 
 // Add a new food item
 router.post('/add', upload.single('image'), async (req, res) => {
@@ -34,7 +30,8 @@ router.post('/add', upload.single('image'), async (req, res) => {
       return res.status(400).json({ success: false, message: 'Image is required' });
     }
 
-    const imagePath = `/uploads/${req.file.filename}`;
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+    const imagePath = `${backendUrl}/uploads/${req.file.filename}`;
 
     const food = new Food({
       name,
@@ -68,20 +65,15 @@ router.get('/list', async (req, res) => {
 router.post('/remove', async (req, res) => {
   try {
     const { id } = req.body;
-    if (!id) {
-      return res.status(400).json({ success: false, message: 'ID is required' });
-    }
+    if (!id) return res.status(400).json({ success: false, message: 'ID is required' });
 
     const food = await Food.findById(id);
-    if (!food) {
-      return res.status(404).json({ success: false, message: 'Food not found' });
-    }
+    if (!food) return res.status(404).json({ success: false, message: 'Food not found' });
 
     // Remove image file
-    const filePath = path.join(process.cwd(), food.image);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+    const fileName = path.basename(food.image); // get filename from URL
+    const filePath = path.join(uploadsPath, fileName);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
     await Food.findByIdAndDelete(id);
 
