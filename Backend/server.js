@@ -25,7 +25,7 @@ if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath);
 // Connect to database
 connectDB();
 
-// ✅ CORS setup
+// Allowed origins
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -33,17 +33,22 @@ const allowedOrigins = [
   process.env.ADMIN_URL,
 ];
 
+// CORS middleware
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // allow non-browser requests
-    if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS: " + origin));
+    if (allowedOrigins.includes(origin) || (origin && origin.endsWith(".onrender.com"))) {
+      return callback(null, true);
     }
+    return callback(new Error("Not allowed by CORS: " + origin));
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// Handle preflight requests
+app.options("*", cors());
 
 // Body parser
 app.use(express.json());
@@ -75,13 +80,13 @@ const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
-        callback(null, true);
+      if (allowedOrigins.includes(origin) || (origin && origin.endsWith(".onrender.com"))) {
+        return callback(null, true);
       } else {
-        callback(new Error("Not allowed by Socket.IO CORS: " + origin));
+        return callback(new Error("Not allowed by Socket.IO CORS: " + origin));
       }
     },
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   },
 });
