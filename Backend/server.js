@@ -29,8 +29,10 @@ connectDB();
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "https://naija-bite-1frontend-a5mq.onrender.com",
   process.env.FRONTEND_URL, 
 ];
+
 
 app.use(
   cors({
