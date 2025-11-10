@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-import http from "http";          
+import http from "http";
 import { Server } from "socket.io";
 
 import { connectDB } from "./config/db.js";
@@ -18,78 +18,113 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Ensure uploads folder exists
+//  uploads folder exists
 const uploadsPath = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath);
 
-// Connect to MongoDB
+//  Connect to database
 connectDB();
 
-// Allowed origins for CORS
+//  CORS configuration
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  process.env.ADMIN_URL,
-].filter(Boolean);
+  "http://localhost:5173",
+  "http://localhost:5174",
+  process.env.FRONTEND_URL, 
+];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow Postman, curl
-    if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
-      return callback(null, true);
-    }
-    return callback(new Error(`CORS policy: ${origin} not allowed`));
-  },
-  credentials: true,
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"],
-}));
-
-// Handle preflight requests
-app.options("*", cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); 
+      if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
+        callback(null, true);
+      } else {
+        console.warn(" Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS: " + origin));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use("/uploads", express.static(uploadsPath));
 
-// API Routes
-app.use("/api/food", foodRouter);
-app.use("/api/user", userRouter);
-app.use("/api/cart", cartRouter);
-app.use("/api/orders", orderRouter);
+// Route imports (with debug logs to find failing one)
+console.log(" Loading routers...");
 
-// Test upload route
+try {
+  app.use("/api/food", foodRouter);
+  console.log("Loaded foodRouter");
+} catch (err) {
+  console.error("Failed to load foodRouter:", err);
+}
+
+try {
+  app.use("/api/user", userRouter);
+  console.log(" Loaded userRouter");
+} catch (err) {
+  console.error("Failed to load userRouter:", err);
+}
+
+try {
+  app.use("/api/cart", cartRouter);
+  console.log(" Loaded cartRouter");
+} catch (err) {
+  console.error("Failed to load cartRouter:", err);
+}
+
+try {
+  app.use("/api/orders", orderRouter);
+  console.log(" Loaded orderRouter");
+} catch (err) {
+  console.error(" Failed to load orderRouter:", err);
+}
+
+//  File upload test route
 app.post("/test-upload", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-  res.json({ filename: req.file.filename, path: `/uploads/${req.file.filename}` });
+  res.json({
+    filename: req.file.filename,
+    path: `/uploads/${req.file.filename}`,
+  });
 });
 
-// Global error handler
+//  Global error handler
 app.use((err, req, res, next) => {
-  console.error("🔥 Error:", err.message);
+  console.error(" Error:", err.message);
   res.status(500).json({ message: err.message });
 });
 
-// Socket.IO setup
+// HTTP + Socket.IO setup
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
-        return callback(null, true);
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by Socket.IO CORS: " + origin));
       }
-      return callback(new Error(`Socket.IO CORS: ${origin} not allowed`));
     },
-    methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+    methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
 io.on("connection", (socket) => {
   console.log("⚡ Client connected:", socket.id);
-  socket.on("disconnect", () => console.log("❌ Client disconnected:", socket.id));
+
+  socket.on("disconnect", () => {
+    console.log(" Client disconnected:", socket.id);
+  });
 });
 
-// Export io for controllers
+// Export io for use in controllers
 export { io };
 
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// Start the server
+server.listen(PORT, () =>
+  console.log(` Server running on http://localhost:${PORT}`)
+);
