@@ -1,11 +1,23 @@
 import express from "express";
-import { addToCart, removeFromCart, getCart } from "../controllers/cartControllers.js";
 import authMiddleware from "../middleware/auth.js";
 
-const cartRouter = express.Router();
+import {
+  placeOrder,
+  verifyOrder,
+  userOrders,
+  updateStatus,
+  listOrders
+} from "../controllers/orderControllers.js";
 
-cartRouter.post("/add", authMiddleware, addToCart);
-cartRouter.post("/remove", authMiddleware, removeFromCart);
-cartRouter.post("/get", authMiddleware, getCart);
+const orderRouter = express.Router();
 
-export default cartRouter;
+// ------------------- USER -------------------
+orderRouter.post("/place", authMiddleware, placeOrder);
+orderRouter.post("/verify", verifyOrder);
+orderRouter.post("/userorders", authMiddleware, userOrders);
+
+// ------------------- ADMIN -------------------
+orderRouter.get("/list", listOrders);
+orderRouter.post("/status", updateStatus);
+
+export default orderRouter;

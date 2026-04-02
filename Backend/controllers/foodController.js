@@ -53,7 +53,7 @@ export const getFoodById = async (req, res) => {
     }
     res.json({ success: true, data: food });
   } catch (error) {
-    console.error('🔥 Error fetching food:', error.message);
+    console.error(' Error fetching food:', error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -68,7 +68,7 @@ export const removeFood = async (req, res) => {
     }
     res.json({ success: true, message: 'Food removed successfully' });
   } catch (error) {
-    console.error('🔥 Error removing food:', error.message);
+    console.error('Error removing food:', error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };

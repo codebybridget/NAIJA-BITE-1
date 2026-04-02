@@ -6,10 +6,10 @@ const foodSchema = new mongoose.Schema(
     description: { type: String, required: true },
     price: { type: Number, required: true },
     category: { type: String, required: true },
-    image: { type: String, required: true }, // match what router saves
+    image: { type: String, required: true }, 
   },
   {
-    timestamps: true, // adds createdAt and updatedAt
+    timestamps: true, 
   }
 );
 
